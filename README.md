@@ -2,9 +2,13 @@
 Demo scripts for Time Tagger and Pulse Streamer.
 
 Connect  four digital channels of Pulse Streamer to Time Tagger inputs:
+
 1 PS -> 1 TT
+
 2 PS -> 2 TT
+
 3 PS -> 3 TT
+
 4 PS -> 4 TT
 
 First, run a PS script in python.
