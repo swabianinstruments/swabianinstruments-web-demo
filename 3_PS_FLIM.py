@@ -7,7 +7,6 @@ Created on Tue Mar 31 12:19:50 2020
 
 import numpy as np
 import random as rnd
-from time import sleep
 
 def expPL(tau, binwidth, bins, counts):
     distr = [np.exp(-0/tau)]
@@ -60,10 +59,10 @@ ip = '169.254.8.2'
 ps = PulseStreamer(ip)
 
 # parameters for pattern generation
-tau_base = 270 # ns
+tau_base = 200 # ns
 laser_period = 1000 # ns
 pixel_period = 1000000 # ns
-pixels = 10
+pixels = 100
 
 # create a sequence-object
 sequence = ps.createSequence()
@@ -83,7 +82,7 @@ for pix in range(pixels):
     # create a sequence-object
     new_sequence = ps.createSequence()
     # generate next FLIM patterns for PS
-    pl_lifetime = tau_base + 50*np.abs((pixels-1)/2-pix)
+    pl_lifetime = tau_base + rnd.randint(0, 300)
     photon, laser, pixel = genFLIM(pl_lifetime, laser_period, pixel_period)
     sync = [(pixel_period + 1, 0)]
     # assign the new patterns to the digital outputs of PS

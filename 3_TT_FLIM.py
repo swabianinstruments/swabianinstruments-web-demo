@@ -23,7 +23,7 @@ sync_ch = 4
 # initialize measurement parameters
 binwidth = 10000 # 10 ns
 bins = 100
-n_pix = 10
+n_pix = 100
 
 # measure FLIM
 image = TimeDifferences(tagger, phot_ch, strt_ch, next_ch, sync_ch, binwidth, bins, n_pix)
