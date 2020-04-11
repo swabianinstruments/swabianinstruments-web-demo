@@ -49,50 +49,61 @@ def genFLIM(pl_lt, las_period, pix_period):
         p = p + 1
     return phot_pattern, las_pattern, pix_pattern
 
-# import API classes into the current namespace
-from pulsestreamer import PulseStreamer
 
-# IP of Pulse Streamer connected directly by Ethernet cable
-ip = '169.254.8.2'
+def main(pulsestreamer_ip='169.254.8.2'):
+    """ This is the main function of the example.
+        Parameters: 
+            pulsestreamer_ip -  IP address of the Pulse Streamer.
+                                The default value corresponds to the
+                                direct connection of the Pulse Streamer 
+                                to the network card of your PC.
+    """
 
-# connect to the Pulse Streamer
-ps = PulseStreamer(ip)
+    # import API classes into the current namespace
+    from pulsestreamer import PulseStreamer
 
-# parameters for pattern generation
-tau_base = 200 # ns
-laser_period = 1000 # ns
-pixel_period = 1000000 # ns
-pixels = 100
+    # connect to the Pulse Streamer
+    ps = PulseStreamer(pulsestreamer_ip)
 
-# create a sequence-object
-sequence = ps.createSequence()
+    # parameters for pattern generation
+    tau_base = 200 # ns
+    laser_period = 1000 # ns
+    pixel_period = 1000000 # ns
+    pixels = 100
 
-# generate and assign the seeding patterns to the digital outputs of PS
-photon = [(1, 0)]
-laser = [(1, 0)]
-pixel = [(1, 0)]
-sync = [(1, 1)]
-sequence.setDigital(1, photon)
-sequence.setDigital(2, laser)
-sequence.setDigital(3, pixel)
-sequence.setDigital(4, sync)
-
-# generate different patterns for each pixel
-for pix in range(pixels):
     # create a sequence-object
-    new_sequence = ps.createSequence()
-    # generate next FLIM patterns for PS
-    pl_lifetime = tau_base + rnd.randint(0, 300)
-    photon, laser, pixel = genFLIM(pl_lifetime, laser_period, pixel_period)
-    sync = [(pixel_period + 1, 0)]
-    # assign the new patterns to the digital outputs of PS
-    new_sequence.setDigital(1, photon)
-    new_sequence.setDigital(2, laser)
-    new_sequence.setDigital(3, pixel)
-    new_sequence.setDigital(4, sync)
-    # add the new_sequence to sequence
-    sequence = sequence + new_sequence
+    sequence = ps.createSequence()
 
-# stream the sequence infinitely
-n_runs = PulseStreamer.REPEAT_INFINITELY
-ps.stream(sequence, n_runs)
+    # generate and assign the seeding patterns to the digital outputs of PS
+    photon = [(1, 0)]
+    laser = [(1, 0)]
+    pixel = [(1, 0)]
+    sync = [(1, 1)]
+    sequence.setDigital(1, photon)
+    sequence.setDigital(2, laser)
+    sequence.setDigital(3, pixel)
+    sequence.setDigital(4, sync)
+
+    # generate different patterns for each pixel
+    for pix in range(pixels):
+        # create a sequence-object
+        new_sequence = ps.createSequence()
+        # generate next FLIM patterns for PS
+        pl_lifetime = tau_base + rnd.randint(0, 300)
+        photon, laser, pixel = genFLIM(pl_lifetime, laser_period, pixel_period)
+        sync = [(pixel_period + 1, 0)]
+        # assign the new patterns to the digital outputs of PS
+        new_sequence.setDigital(1, photon)
+        new_sequence.setDigital(2, laser)
+        new_sequence.setDigital(3, pixel)
+        new_sequence.setDigital(4, sync)
+        # add the new_sequence to sequence
+        sequence = sequence + new_sequence
+
+    # stream the sequence infinitely
+    n_runs = PulseStreamer.REPEAT_INFINITELY
+    ps.stream(sequence, n_runs)
+
+
+if __name__ == '__main__':
+    main()

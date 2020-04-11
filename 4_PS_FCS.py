@@ -23,30 +23,40 @@ def pattFCS(cells, counts, window, time):
     return pattern
 
 
-# import API classes into the current namespace
-from pulsestreamer import PulseStreamer
+def main(pulsestreamer_ip='169.254.8.2'):
+    """ This is the main function of the example.
+        Parameters: 
+            pulsestreamer_ip -  IP address of the Pulse Streamer.
+                                The default value corresponds to the
+                                direct connection of the Pulse Streamer 
+                                to the network card of your PC.
+    """
 
-# IP of Pulse Streamer connected directly by Ethernet cable
-ip = '169.254.8.2'
+    # import API classes into the current namespace
+    from pulsestreamer import PulseStreamer
 
-# connect to the Pulse Streamer
-ps = PulseStreamer(ip)
+    # connect to the Pulse Streamer
+    ps = PulseStreamer(pulsestreamer_ip)
 
-# create a sequence-object
-sequence = ps.createSequence()
+    # create a sequence-object
+    sequence = ps.createSequence()
 
-# parameters for FCS pattern
-n_cells = 100
-em_counts = 1000
-meas_window = 1e9 # in ns, 1s
-pass_time = 1e5 # in ns, 100us
+    # parameters for FCS pattern
+    n_cells = 100
+    em_counts = 1000
+    meas_window = 1e9 # in ns, 1s
+    pass_time = 1e5 # in ns, 100us
 
-n_runs = PulseStreamer.REPEAT_INFINITELY
-hold = 1 # second
-# generate new pattern every second and stream
-while True:
-    # generate and assign the pattern to a digital output of PS
-    patt1 = pattFCS(n_cells, em_counts, meas_window, pass_time)
-    sequence.setDigital(1, patt1)
-    ps.stream(sequence, n_runs)
-    sleep(hold)
+    n_runs = PulseStreamer.REPEAT_INFINITELY
+    hold = 1 # second
+    # generate new pattern every second and stream
+    while True:
+        # generate and assign the pattern to a digital output of PS
+        patt1 = pattFCS(n_cells, em_counts, meas_window, pass_time)
+        sequence.setDigital(1, patt1)
+        ps.stream(sequence, n_runs)
+        sleep(hold)
+
+
+if __name__ == '__main__':
+    main()

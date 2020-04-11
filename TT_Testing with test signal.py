@@ -109,7 +109,7 @@ plt.tick_params('x', labelsize=10, bottom=True, top=True, direction='in', length
 plt.tick_params('y', labelsize=10, left=True, right=True, direction='in', length=4)
 plt.xlabel('Time (ps)', fontsize=12)
 plt.ylabel('Counts (norm.)', fontsize=12)
-plt.xlim(t0-2*FWHM,t0+2*FWHM);
+plt.xlim(t0-2*FWHM,t0+2*FWHM)
 plt.ylim(0.0,1.2)
 plt.title("Correlation between channels 1 and 2")
 plt.show()
