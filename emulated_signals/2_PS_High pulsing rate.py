@@ -2,7 +2,17 @@
 """
 Created on Wed Mar 25 09:21:02 2020
 
-@author: liudm
+@author: liu
+"""
+
+NAME = 'High Pulsing Rate'
+DESCR = """
+This example uses **Pulse Streamer** to emulate signals for a time-resolved 
+fluorescence measurement with high laser repetition rate.
+
+* Channel 1 - fluorescence photons
+* Channel 2 - laser pulses 
+
 """
 
 import numpy as np
@@ -15,7 +25,7 @@ def LASERpattern(f, ln):
         ln is the length of pattern
     """
 
-    period = round(1/f/1e6*1e9) # ns between laser pulses
+    period = int(round(1/f/1e6*1e9)) # ns between laser pulses
     pattern = [(1, 1), (period-1, 0)]
     # extend up to length "ln"
     for i in range(1,ln):
@@ -30,37 +40,33 @@ def PHOTONpattern(f, tau, ln):
         ln is the length of pattern
     """
 
-    period = round(1/f/1e6*1e9) # ns between laser pulses
-    prob = 1/f
-    # generate a random time stamp
-    a = (period-1)/(np.exp(1/tau)-1)
-    stamp = int(a * (np.exp(rnd.random()/tau) - 1) + 1)
-    # add the stamp to pattern accorging to probability
-    if (rnd.random() < prob):
-        if (stamp == 1):
-            pattern = [(1, 1), (period-1, 0)]
-        elif (stamp == period):
-            pattern = [(period-1, 0), (1, 1)]
-        else:
-            pattern = [(stamp-1, 0), (1, 1), (period-stamp, 0)]
-    else:
-        pattern = [(period, 0)]
-    # extend the pattern up to length "ln"
-    for i in range (1, ln):
-        stamp = int(a * (np.exp(rnd.random()/tau) - 1) + 1)
-        if (rnd.random() < prob):
-            if (stamp == 1):
+    period = int(round(1/f/1e6*1e9)) # ns between laser pulses
+    # initialize a photon pattern
+    pattern = [(0, 0)]
+    # constant amplitude for random photon generation
+    # choose a < 1
+    a = 0.05
+    # generate the pattern of length "ln"
+    for i in range(ln):
+        pattern.append((1, 0))
+        # generate a random time stamp
+        t = rnd.randint(1, period-1)
+        # probability of this stamp to appear in the pattern
+        prob = rnd.random()
+        # add the stamp to pattern accorging to probability
+        if ( prob < ( a * np.exp(-(t-1)/tau) ) ):
+            if (t == 1):
                 pattern.append((1, 1))
-                pattern.append((period-1, 0))
-            elif (stamp == period):
-                pattern.append((period-1, 0))
+                pattern.append((period-2, 0))
+            elif (t == (period-1)):
+                pattern.append((period-2, 0))
                 pattern.append((1, 1))
             else:
-                pattern.append((stamp-1, 0))
+                pattern.append((t-1, 0))
                 pattern.append((1, 1))
-                pattern.append((period-stamp, 0))
+                pattern.append((period-1-t, 0))
         else:
-            pattern.append((period, 0))
+            pattern.append((period-1, 0))
     return pattern
     
 
@@ -84,11 +90,10 @@ def main(pulsestreamer_ip='169.254.8.2'):
 
     # choose parameters
     # las_f - laser repetition rate in MHz
-    # pl_tau - non-dimentional photoluminescence lifetime
-    # (pl_tau/las_f*1e3) = lifetime in ns
+    # pl_tau - fluorescence lifetime in ns
     # patt_ln is length of one pattern
     las_f = 80
-    pl_tau = 0.4
+    pl_tau = 4
     patt_ln = 1000
 
     hold = 0.2 # seconds
@@ -96,8 +101,8 @@ def main(pulsestreamer_ip='169.254.8.2'):
     ps.stream(sequence, runs)
     while True:
         # generate patterns
-        pattern1 = LASERpattern(las_f, patt_ln)
-        pattern2 = PHOTONpattern(las_f, pl_tau, patt_ln)
+        pattern1 = PHOTONpattern(las_f, pl_tau, patt_ln)
+        pattern2 = LASERpattern(las_f, patt_ln)
         # assign the patterns to digital channels
         sequence.setDigital(1, pattern1)
         sequence.setDigital(2, pattern2)

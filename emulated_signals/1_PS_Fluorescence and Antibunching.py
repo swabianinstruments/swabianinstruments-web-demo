@@ -2,21 +2,19 @@
 """
 Created on Wed Mar 11 14:58:24 2020
 
-This example implements ....
-
 @author: liu
 """
 
 
-NAME = 'This is a name'
+NAME = 'Fluorescence and Antibunching'
 DESCR = """
 This example uses **Pulse Streamer** to emulate signals for a typical time-resolved 
-photoluminescence measurement.
+fluorescence measurement and for photon antibunching under steady-state excitation.
 The script generates the folowing signals
 
-* Channel 1 - Laser pulses 
-* Channel 2 - luminescence photons
-* Channel 3 and Channel 4 - generate photon events that exhibit antibunching properties
+* Channel 1 - fluorescence photons
+* Channel 2 - laser pulses
+* Channel 3 and Channel 4 - photons with antibunching properties
 """
 
 import numpy as np
@@ -25,52 +23,47 @@ from time import sleep
 
 
 
-def TRPLtag(time, lifetime, amplitude):
+def TRFLtag(time, lifetime, amplitude):
     """ function that returns a time tag in ns
-        with statistics of monoexponential photoluminescece decay
+        with statistics of smooth fluorescence decay
         the window is indirectly defined by variable "amplitude"
         variable "time" is random in the range [0,1]
     """
-    time_tag = int(amplitude * (np.exp(time/lifetime) - 1) + 1)
+    time_tag = int(round((amplitude * (np.exp(time/lifetime) - 1) + 1)))
     return time_tag
 
 
-def TRPLpattern(tau, wind, rep):
-    """ function that creates a pattern imitating time-resolved photoluminescence
+def TRFLpattern(tau, wind, rep):
+    """ function that creates a pattern imitating time-resolved fluorescence
         returns a pattern with one randomly generated photon tag within window "wind"
-        tau - exponential lifetime of TRPL
+        tau - approximate fluorescence lifetime
         wind - measurement window in ns
     """
+    
+    # calculate constant "a" for random generation
     a = (wind - 1)/(np.exp(1/tau)-1)
-    f = TRPLtag(rnd.random(), tau, a)
-    if (f == 1):
-        pattern_PL = [(1, 1)]
-        pattern_PL.append((wind-1, 0))
-    elif (f == wind):
-        pattern_PL = [(wind-1, 0)]
-        pattern_PL.append((wind, 1))
-    else:
-        pattern_PL = [(f-1, 0)]
-        pattern_PL.append((1, 1))
-        pattern_PL.append((wind-f, 0))
-    for i in range(1,rep):
-        f = TRPLtag(rnd.random(), tau, a)
+    # initialize pattern
+    pattern_FL = [(0, 0)]
+    for i in range(rep):
+        pattern_FL.append((1, 0))
+        f = TRFLtag(rnd.random(), tau, a)
         if (f == 1):
-            pattern_PL.append((1, 1))
-            pattern_PL.append((wind-1, 0))
+            pattern_FL.append((1, 1))
+            pattern_FL.append((wind-2, 0))
         elif (f == wind):
-            pattern_PL.append((wind-1, 0))
-            pattern_PL.append((wind, 1))
+            pattern_FL.append((wind-2, 0))
+            pattern_FL.append((1, 1))
         else:
-            pattern_PL.append((f-1, 0))
-            pattern_PL.append((1, 1))
-            pattern_PL.append((wind-f, 0))
-    return pattern_PL
+            pattern_FL.append((f-1, 0))
+            pattern_FL.append((1, 1))
+            pattern_FL.append((wind-1-f, 0))
+    return pattern_FL
 
 
 def LASERpattern(period, rep):
-    """function that creates a pattern imitating pulsed excitation
-        "wind" is period between the pulses in ns
+    """function that creates a pattern imitating pulsed laser excitation
+        rep - pulses within the pattern
+        period between the pulses is in ns
     """
     pattern_las = [(1, 1), (period-1, 0)]
     for i in range(1,rep):
@@ -82,41 +75,17 @@ def LASERpattern(period, rep):
 def ANTIBpattern(per, rep):
     """ function that imitates photon antibunching measurement with CW excitation
         returns two patterns for two detectors
-        "coi" is coincidence degree, that is if coi = 0.2
-        then 40% of photons get only to det1; 40% go only to det2; 20% go to both
+        photon goes to one of the detectors with 50% probability
     """
 
-    # generate a photon count
-    f = round(rnd.random()*(per - 1)) + 1
-    # imitate 50% photon splitter
-    if (rnd.random() < 0.5):
-        if (f == 1):
-            patt_det1 = [(1, 1)]
-            patt_det1.append((per-1, 0))
-        elif (f == per):
-            patt_det1 = [(per-1, 0)]
-            patt_det1.append((1, 1))
-        else:
-            patt_det1 = [(f-1, 0)]
-            patt_det1.append((1, 1))
-            patt_det1.append((per-f, 0))
-        patt_det2 = [(per, 0)]
-    else:
-        patt_det1 = [(per, 0)]
-        if (f == 1):
-            patt_det2 = [(1, 1)]
-            patt_det2.append((per-1, 0))
-        elif (f == per):
-            patt_det2 = [(per-1, 0)]
-            patt_det2.append((1, 1))
-        else:
-            patt_det2 = [(f-1, 0)]
-            patt_det2.append((1, 1))
-            patt_det2.append((per-f, 0))
-    # repeat for "rep" repetitions
-    # imitate 50% photon splitter
-    for i in range(1, rep):
+    # initialize patterns
+    patt_det1 = [(0, 0)]
+    patt_det2 = [(0, 0)]
+    # generate "rep" photons
+    for i in range(rep):
+        # generate one photon count at random moment within period "per"
         f = round(rnd.random()*(per - 1)) + 1
+        # imitate 50% photon splitter
         if (rnd.random() < 0.5):
             if (f == 1):
                 patt_det1.append((1, 1))
@@ -158,18 +127,19 @@ def main(pulsestreamer_ip='169.254.8.2'):
     
     # connect to the Pulse Streamer
     ps = PulseStreamer(pulsestreamer_ip)
+    ps.reset()
     
     # create a sequence-object
     sequence = ps.createSequence()
     
     # choose your parameters
-    # lifetime of photoluminescence
+    # approximate fluorescence lifetime
     # non-dimentional normalized factor
     # multiply by "window" to get lifetime in ns
     exp_tau = 0.37
     # window is period between laser pulses
-    # for Time Tagger 20 choose window >= 500 ns (below 2 MHz on 1 channel)
-    # for Time Tagger Ultra choose window >= 50 ns (below 20 MHz on 1 channel)
+    # for Time Tagger 20 choose window >= 500 ns (below 2 MHz at 1 channel)
+    # for Time Tagger Ultra choose window >= 50 ns (below 20 MHz at 1 channel)
     window = 1000 # ns
     # repeat = repetitions per one pattern
     repeat = 1000
@@ -179,9 +149,9 @@ def main(pulsestreamer_ip='169.254.8.2'):
     # generate new patterns interminably
     # and hold each new pattern for time "hold"
     while (True):
-        # TRPL pattern for channels 1 and 2
-        pattern1 = LASERpattern(window, repeat)
-        pattern2 = TRPLpattern(exp_tau, window, repeat)
+        # TRFL pattern for channels 1 and 2
+        pattern1 = TRFLpattern(exp_tau, window, repeat)
+        pattern2 = LASERpattern(window, repeat)
         # antibunching pattern for channels 3 and 4
         antibunching = ANTIBpattern(int(window/10), repeat)
         pattern3 = antibunching[0]

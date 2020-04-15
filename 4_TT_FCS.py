@@ -24,8 +24,7 @@ hist = HistogramLogBins(tagger, ch, ch, left, right, bins)
 print("\nHistogram measurement is running.")
 
 # collect data for 5 seconds and plot
-sleep(10.0)
-# start-stop histogram -> TRPL data
+sleep(5)
 bins = hist.getBinEdges()
 y = hist.getDataNormalizedG2()
 plot_TT.ScatterLogBinsPlot(bins, y, left, right)

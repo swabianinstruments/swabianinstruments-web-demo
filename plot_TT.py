@@ -59,7 +59,6 @@ def LinePlot(x, y):
     plt.show()
     
 def ScatterLogBinsPlot(bins, y, lf, rg):
-    xlim = bins[-1]
     x = np.delete(bins, -1)
     ylim = np.max(y)
     plt.figure('ScatterLogBinsPlot', [4,3], 200)
@@ -95,12 +94,7 @@ def BarChart2D(x, y):
     lifetimes = np.zeros((x_pix, x_pix))
     for i in range(len(y)):
         peak = np.max(y[i])
-        half = peak/2
-        q = 0
-        while ((y[i, q] > half) and (q < len(y[i])-1)):
-            q = q + 1
-        half_life = x[q]
-        init_values = [peak, half_life/0.69]
+        init_values = [peak, 350000]
         optim_values = curve_fit(exponent, x, y[i], init_values)
         A = optim_values[0][0]
         tau = optim_values[0][1]

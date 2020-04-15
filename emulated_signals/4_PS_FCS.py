@@ -3,6 +3,16 @@
 Created on Wed Apr  1 15:52:30 2020
 
 @author: liu
+
+"""
+
+NAME = 'FCS'
+DESCR = """
+This example uses **Pulse Streamer** to emulate signals for fluorescence correlation spectroscopy (FSC).
+The example demonstrates autocorrelation measurement with logarithmic binning.
+
+* Channel 1 - fluorescence photons
+
 """
 
 import random as rnd

@@ -2,7 +2,8 @@
 """
 Created on Wed Mar 25 11:01:41 2020
 
-@author: liudm
+@author: liu
+
 """
 
 from time import sleep
@@ -28,7 +29,7 @@ n_pix = 100
 # measure FLIM
 image = TimeDifferences(tagger, phot_ch, strt_ch, next_ch, sync_ch, binwidth, bins, n_pix)
 print("\nFLIM measurement is running.")
-sleep(20)
+sleep(10)
 xFLIM = image.getIndex()
 yFLIM = image.getData()
 plot_TT.BarChart2D(xFLIM, yFLIM)

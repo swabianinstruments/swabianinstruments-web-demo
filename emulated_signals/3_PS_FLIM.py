@@ -3,12 +3,30 @@
 Created on Tue Mar 31 12:19:50 2020
 
 @author: liu
+
+"""
+
+
+NAME = 'FLIM'
+DESCR = """
+This example uses **Pulse Streamer** to emulate signals for fluorescence lifetime imaging (FLIM).
+Laser pulse serves as a start count;
+fluorescence photon is a stop count;
+pixel count moves to the next histogram (next FLIM pixel);
+sync count returns measurement to the beginning of the FLIM-image.
+
+* Channel 1 - fluorescence photon
+* Channel 2 - laser pulse
+* Channel 3 - pixel count
+* Channel 3 - sync count
+
 """
 
 import numpy as np
 import random as rnd
 
-def expPL(tau, binwidth, bins, counts):
+# tag distribution to emulate exponential fluorescence decay
+def expFL(tau, binwidth, bins, counts):
     distr = [np.exp(-0/tau)]
     for i in range(1, bins):
         distr.append(np.exp(-i*binwidth/tau))
@@ -24,6 +42,7 @@ def expPL(tau, binwidth, bins, counts):
         distr[ind] = distr[ind] - 1
     return distr
 
+# generate a randomized FLIM pattern
 def genFLIM(pl_lt, las_period, pix_period):
     pix_pattern = [(1, 1), (pix_period, 0)]
     las_pattern = [(1, 0), (1, 1), (las_period - 1, 0)]
@@ -33,7 +52,7 @@ def genFLIM(pl_lt, las_period, pix_period):
         las_pattern.append((las_period - 1, 0))
     bw = 10
     bns = 100
-    phot_distr = expPL(pl_lt, bw, bns, las_counts)
+    phot_distr = expFL(pl_lt, bw, bns, las_counts)
     phot_pattern = [(1, 0)]
     for b in range(phot_distr[0]):
         phot_pattern.append((1, 0))
