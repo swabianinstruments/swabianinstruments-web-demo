@@ -11,7 +11,7 @@ Connect  four digital channels of Pulse Streamer to Time Tagger inputs:
 
 4 PS -> 4 TT
 
-First, run a PS script in python.
+First, run a PS script in python directly or via SignalGeneratorGUI.
 Then, run the corresponding TT script in python or show the result in TT web-interface.
 Parameters are such that one can use Time Tagger 20 as well as Time Tagger Ultra 8. 
 All TT scripts use file "plot_TT.py". Make sure it is in the folder.
