@@ -18,7 +18,7 @@ sync count returns measurement to the beginning of the FLIM-image.
 * Channel 1 - fluorescence photon
 * Channel 2 - laser pulse
 * Channel 3 - pixel count
-* Channel 3 - sync count
+* Channel 4 - sync count
 
 """
 
