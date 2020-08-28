@@ -44,7 +44,7 @@ print(f"\nSetting up Conditional Filter for channel {las_ch}")
 
 # measure the countrates again after applying conditional filter
 cr.startFor(int(1e12))
-sleep(1)
+sleep(5)
 cr_las, cr_phot = cr.getData()
 print(f"\nCountrate on channel {las_ch} is {int(cr_las)} cps")
 print(f"Countrate on channel {phot_ch} is {int(cr_phot)} cps")
@@ -58,7 +58,7 @@ bins = 13
 # mind that now start=photon, click=laser
 hist = Histogram(tagger, las_ch, phot_ch, binwidth, bins)
 print("\nHistogram measurement is running.")
-sleep(10)
+sleep(20)
 # flip the histogram along the time-axis
 xhist = abs(hist.getIndex()-bins*1000)
 yhist = hist.getData()
