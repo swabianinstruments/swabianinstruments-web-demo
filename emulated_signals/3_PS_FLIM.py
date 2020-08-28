@@ -69,7 +69,7 @@ def genFLIM(pl_lt, las_period, pix_period):
     return phot_pattern, las_pattern, pix_pattern
 
 
-def main(pulsestreamer_ip='169.254.8.2'):
+def main(pulsestreamer_ip='192.168.178.128'):
     """ This is the main function of the example.
         Parameters: 
             pulsestreamer_ip -  IP address of the Pulse Streamer.

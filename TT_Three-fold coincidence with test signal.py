@@ -20,7 +20,7 @@ print('\nTest signal is activated at channels 1, 2, and 3.')
 
 # run the triple-coincidence measurement
 # cw = coincidence window
-# play with coincidence window and notice chanes in the countrate
+# play with coincidence window and notice changes in the countrate
 # alternatively, introduce delays at channels [1, 2, 3] to change the result
 cw = 450 # ps
 coinc = Coincidence(tagger, [1, 2, 3], cw)
